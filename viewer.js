@@ -21,7 +21,7 @@ const clock = new THREE.Clock();
 
 const mixers = [];  //Each agent needs a mixer to keep track of their animation state
 const loader = new FBXLoader(); //We are using FBX files. If this ever changes, then we can just change this line
-let base;
+let base = null;
 let allAnimations = []; //All the animations we have loaded
 
 //Turn the fbx loader into a promise.
@@ -153,6 +153,7 @@ function boot(three, environment, locations, assetURL) {
       three.scene.add(first);
       first.position.set(0, 0, 0);
       first.scale.set(.01, .01, .01);
+      
     })
     .catch(err => {
       console.error("There was an error in the load promise " + err);
@@ -281,6 +282,10 @@ function render(three) {
   animate()
 }
 
+function hasBooted(){
+  return base!=null;
+}
+
 export {
   //CylinderGeometry,
   //MakeLabelCanvas,
@@ -290,5 +295,6 @@ export {
   addLocations,
   addAgent, //Add an agent to the simulation
   updateAgent,  //Update an agent in the simulation
-  render  //Render the scene
+  render , //Render the scene
+  hasBooted
 };

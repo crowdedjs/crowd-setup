@@ -18,6 +18,7 @@ class CrowdSetup {
       //Create the "control" on top that has the play button, etc.
       this.controls = new ControlCreator(secondsOfSimulation, millisecondsBetweenFrames, simulations, elementParent);
       //Create all the THREE.js view
+      
       viewer.boot(CrowdSetup.three, floorObj, locations, assetURL);
     }
     else {
@@ -120,6 +121,7 @@ class CrowdSetup {
     function draw() {
       CrowdSetup.allSimulations.forEach(simulationAgents => {
         if (simulationAgents.length == 0) return; //If there is nothing to draw, don't do anything
+        if(!viewer.hasBooted()) return;
 
         let index = self.controls.getCurrentTick(); //Get the number of the frame we want to see
 
