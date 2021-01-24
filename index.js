@@ -75,6 +75,14 @@ class CrowdSetup {
           let oldDestination = agent.destination; //Get the new destination based on the agent's behavior
 
           //Wait for the behavior update callback
+          let instance = undefined;
+          for(let i = 0; i < frameAgentDetails.length; i++){
+            if(frameAgentDetails[i].idx == agent.idx)
+              instance = frameAgentDetails[i];
+          }
+          //let ins = frameAgentDetails.filter(q=>q.idx == agent.idx)
+          agent.location = {};
+          [agent.location.x, agent.location.y, agent.location.z] = [instance.x, instance.y, instance.z];
           await agent.behavior.update(agentConstants, frameAgentDetails, i * millisecondsBetweenFrames);
 
           //If the new destination is not null, send the updated destination to the
