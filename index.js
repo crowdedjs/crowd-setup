@@ -2,7 +2,7 @@ import * as viewer from "./viewer.js"
 // import ControlCreator from "https://cdn.jsdelivr.net/npm/@crowdedjs/controller/controller.js"
 import ControlCreator from "./control-creator.js"
 import replacer from "./replacer.js"
-import HospitalClass from "../support/hospital.js"
+//import HospitalClass from "../support/hospital.js"
 function VectorEquals(one, two) {
   if (!one || !two) return false;
   return one.x == two.x && one.y == two.y && one.z == two.z;
@@ -205,7 +205,7 @@ class CrowdSetup {
       
       // COMPUTER ENTRIES
       console.log("COMPUTER ENTRIES: ");
-      console.log(window.Hospital.computer.print());
+      //console.log(window.Hospital.computer.print());
       
       // WHAT ELSE SHOULD WE PRINT??
 
