@@ -1,6 +1,12 @@
 import * as viewer from "./viewer.js"
-import ControlCreator from "https://cdn.jsdelivr.net/npm/@crowdedjs/controller/controller.js"
+// import ControlCreator from "https://cdn.jsdelivr.net/npm/@crowdedjs/controller/controller.js"
+import ControlCreator from "./control-creator.js"
 import replacer from "./replacer.js"
+import HospitalClass from "../support/hospital.js"
+function VectorEquals(one, two) {
+  if (!one || !two) return false;
+  return one.x == two.x && one.y == two.y && one.z == two.z;
+}
 
 class CrowdSetup {
   static allSimulations = []; //Static reference to all the simulations we are running
@@ -12,6 +18,9 @@ class CrowdSetup {
     this.first = true;              //Is this the first tick?
     let self = this;                //Reference to this for use in lambdas
     this.controls = {};
+    let done = false;
+    let nurseSim = false;
+    let sentinelAgent;
 
     //Add the html elements if the user passes in a reference for us to attach to.
     if (elementParent != null) {
@@ -61,15 +70,18 @@ class CrowdSetup {
       agentConstants.forEach(agent => {
         //See if we need to add the agent to the simulation
         if (!agent.hasEntered && agent.startMSec <= i * millisecondsBetweenFrames) {
+          //if (agent.id < 8) {
           newAgents.push(agent);
           agent.hasEntered = true;
           agent.inSimulation = true;
+          //}
         }
       })
 
       //Now update any agents that are in the scene
       for (let j = 0; j < agentConstants.length; j++) {
         let agent = agentConstants[j]
+        if(!agent.inSimulation) continue;
         if (newAgents.includes(agent)) { } //Ignore new agents
         else if (agent.hasEntered) {
           let oldDestination = agent.destination; //Get the new destination based on the agent's behavior
@@ -83,11 +95,15 @@ class CrowdSetup {
           //let ins = frameAgentDetails.filter(q=>q.idx == agent.idx)
           agent.location = {};
           [agent.location.x, agent.location.y, agent.location.z] = [instance.x, instance.y, instance.z];
-          await agent.behavior.update(agentConstants, frameAgentDetails, i * millisecondsBetweenFrames);
+          
+          if (self.sentinelAgent === undefined && agent.medicalStaffSubclass == "Nurse") {
+            self.sentinelAgent = agent;
+          }
+          await agent.behavior.update(agentConstants, frameAgentDetails, i * millisecondsBetweenFrames); //HERE
 
           //If the new destination is not null, send the updated destination to the
           //path finding engine
-          if (agent.destination != null && agent.destination != oldDestination) {
+          if (agent.destination != null && !VectorEquals(agent.destination, oldDestination)) {
             [agent.destX, agent.destY, agent.destZ] = [agent.destination.x, agent.destination.y, agent.destination.z];
             newDestinations.push(agent);
           }
@@ -99,17 +115,101 @@ class CrowdSetup {
         }
       }
 
+      if (self.sentinelAgent !== undefined && self.sentinelAgent.behavior.checkEndOfSimulation()) {
+        done = true;
+      }
+
       //Check to see if we need to end the simulation
-      if (i < secondsOfSimulation * 1_000 / millisecondsBetweenFrames) {
+      if (nurseSim && done && !self.sentinelAgent.behavior.checkEndOfSimulation()) {
+        console.log("Done with tick callback.")
+      } else if (!nurseSim && i > secondsOfSimulation * 1_000 / millisecondsBetweenFrames) { 
+        console.log("Done with tick callback.")
+      } else {
         //If the simulation needs to continue, send on the information
         //about new agentConstants, agentConstants with new destinations, and agentConstants that have left the simulation
         nextTick([JSON.stringify(newAgents, replacer), JSON.stringify(newDestinations, replacer), JSON.stringify(leavingAgents, replacer)])
-      }
-      else {
-        console.log("Done with tick callback.")
+
+        // SCORING FUNCTION CALL
+        scoring();
       }
     }
 
+
+    // SCORING FUNCTION
+    function scoring() {
+      //console.log(agentPositionsRef);
+
+      // MAX AGENTS IN EACH FRAME
+      let averageOccupancy = 0;
+      let maximumOccupancy = 0;
+      let maxAgents = [];
+      console.log("MAX AGENTS IN FRAME: ")
+      for (let i = 0; i < agentPositionsRef.length; i++)
+      {
+        //console.log("MAX AGENTS IN FRAME " + (i + 1) + ": " + agentPositionsRef[i].length)
+        maxAgents.push(agentPositionsRef[i].length);
+        averageOccupancy += agentPositionsRef[i].length;
+        
+        let agentsInSim = 0;
+        for (let j = 0; j < agentPositionsRef[i].length; j++)
+        {
+          if (agentPositionsRef[i][j].inSimulation)
+          {
+            agentsInSim++;
+          }
+        }
+        if (agentsInSim > maximumOccupancy)
+        {
+          maximumOccupancy = agentsInSim;
+      }
+    }
+      console.log(maxAgents);
+
+
+      // AVERAGE OCCUPANCY
+      averageOccupancy = averageOccupancy / agentPositionsRef.length;
+      console.log("AVERAGE OCCUPANCY: " + averageOccupancy);
+
+      // MAXIMUM OCCUPANCY ACROSS ALL FRAMES
+      console.log("MAXIMUM OCCUPANCY: " + maximumOccupancy);
+
+      // CHECK ID OF EACH AGENT, FIND FIRST AND LAST FRAME, THEN AVERAGE ALL OF THE TIME IN THE SIMULATION
+      // COULD ABSOLUTELY SIMPLIFY THIS
+      let agentArray = [];
+      for (let i = 0; i < agentPositionsRef.length; i++)
+      {
+        if(agentArray.length < agentPositionsRef[i].length)
+        {
+          for(let j = agentArray.length; j < agentPositionsRef[i].length; j++)
+          {
+            agentArray[j] = new Array(agentPositionsRef[j].id, i + 1, 7501);
+          }
+        }
+
+        for (let j = 0; j < agentPositionsRef[i].length; j++)
+        {
+          if (!agentPositionsRef[i][j].inSimulation)
+          {
+            agentArray[j] = i;
+          }
+        }
+      }
+
+      let averageTime = 0;
+      for (let i = 0; i < agentArray.length; i++)
+      {
+        averageTime += (agentArray[i][2] - agentArray[i][1])
+      }
+      averageTime = averageTime / agentArray.length;
+      console.log("AVERAGE FRAMES IN SIMULATION: " + averageTime);  
+      
+      // COMPUTER ENTRIES
+      console.log("COMPUTER ENTRIES: ");
+      console.log(window.Hospital.computer.print());
+      
+      // WHAT ELSE SHOULD WE PRINT??
+
+    }
 
     function main() {
       viewer.Resize(window, CrowdSetup.three.renderer, CrowdSetup.three.camera); //Boot the viewer
@@ -133,10 +233,12 @@ class CrowdSetup {
 
         let index = self.controls.getCurrentTick(); //Get the number of the frame we want to see
 
-        index = simulationAgents.length - 1;
         //TODO: Override and always show the last tick.
         //Force look at the current frame
-        //Take this line out to use the controls
+        //Use this line to use the controls
+        //index = simulationAgents.length - 1;
+
+        //Use this line to respond to the actual controls
         index = Math.min(index, simulationAgents.length - 1);
 
         let frame = simulationAgents[index]; //Get the positional data for that frame
@@ -162,6 +264,7 @@ class CrowdSetup {
         for (let j = 0; j < CrowdSetup.three.agentGroup.children.length; j++) {
           let child = CrowdSetup.three.agentGroup.children[j];
           let agent = frame.find(f => f.id == child._id);
+          if(!agent) continue;
           child.position.set(agent.x, agent.y, agent.z);
           viewer.updateAgent(CrowdSetup.three, agent)
         }
