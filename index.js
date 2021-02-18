@@ -8,6 +8,8 @@ function VectorEquals(one, two) {
   return one.x == two.x && one.y == two.y && one.z == two.z;
 }
 
+let DEBUG = false;
+
 class CrowdSetup {
   static allSimulations = []; //Static reference to all the simulations we are running
   static firstTicks = [];     //Static reference that tracks if each simulation is in its first frame
@@ -121,9 +123,9 @@ class CrowdSetup {
 
       //Check to see if we need to end the simulation
       if (nurseSim && done && !self.sentinelAgent.behavior.checkEndOfSimulation()) {
-        console.log("Done with tick callback.")
+        if(DEBUG) console.log("Done with tick callback.")
       } else if (!nurseSim && i > secondsOfSimulation * 1_000 / millisecondsBetweenFrames) { 
-        console.log("Done with tick callback.")
+        if(DEBUG) console.log("Done with tick callback.")
       } else {
         //If the simulation needs to continue, send on the information
         //about new agentConstants, agentConstants with new destinations, and agentConstants that have left the simulation
@@ -143,7 +145,7 @@ class CrowdSetup {
       let averageOccupancy = 0;
       let maximumOccupancy = 0;
       let maxAgents = [];
-      console.log("MAX AGENTS IN FRAME: ")
+      if(DEBUG) console.log("MAX AGENTS IN FRAME: ")
       for (let i = 0; i < agentPositionsRef.length; i++)
       {
         //console.log("MAX AGENTS IN FRAME " + (i + 1) + ": " + agentPositionsRef[i].length)
@@ -163,15 +165,15 @@ class CrowdSetup {
           maximumOccupancy = agentsInSim;
       }
     }
-      console.log(maxAgents);
+    if(DEBUG) console.log(maxAgents);
 
 
       // AVERAGE OCCUPANCY
       averageOccupancy = averageOccupancy / agentPositionsRef.length;
-      console.log("AVERAGE OCCUPANCY: " + averageOccupancy);
+      if(DEBUG) console.log("AVERAGE OCCUPANCY: " + averageOccupancy);
 
       // MAXIMUM OCCUPANCY ACROSS ALL FRAMES
-      console.log("MAXIMUM OCCUPANCY: " + maximumOccupancy);
+      if(DEBUG) console.log("MAXIMUM OCCUPANCY: " + maximumOccupancy);
 
       // CHECK ID OF EACH AGENT, FIND FIRST AND LAST FRAME, THEN AVERAGE ALL OF THE TIME IN THE SIMULATION
       // COULD ABSOLUTELY SIMPLIFY THIS
@@ -201,10 +203,10 @@ class CrowdSetup {
         averageTime += (agentArray[i][2] - agentArray[i][1])
       }
       averageTime = averageTime / agentArray.length;
-      console.log("AVERAGE FRAMES IN SIMULATION: " + averageTime);  
+      if(DEBUG) console.log("AVERAGE FRAMES IN SIMULATION: " + averageTime);  
       
       // COMPUTER ENTRIES
-      console.log("COMPUTER ENTRIES: ");
+      if(DEBUG) console.log("COMPUTER ENTRIES: ");
       //console.log(window.Hospital.computer.print());
       
       // WHAT ELSE SHOULD WE PRINT??
