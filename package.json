@@ -8,5 +8,8 @@
   },
   "keywords": [],
   "author": "B. Ricks, PhD",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@crowdedjs/worker": "^0.2.2"
+  }
 }

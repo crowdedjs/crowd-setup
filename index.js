@@ -2,6 +2,7 @@ import * as viewer from "./viewer.js"
 // import ControlCreator from "https://cdn.jsdelivr.net/npm/@crowdedjs/controller/controller.js"
 import ControlCreator from "./control-creator.js"
 import replacer from "./replacer.js"
+import bootWorker from "@crowdedjs/worker"
 //import HospitalClass from "../support/hospital.js"
 function VectorEquals(one, two) {
   if (!one || !two) return false;
