@@ -5,7 +5,7 @@ import { OBJLoader } from './lib/OBJLoader.js';
 import { FBXLoader } from './lib/FBXLoader.js';
 import { SkeletonUtils } from './lib/SkeletonUtils.js';
 
-import { WhiteMaterial, BlackMaterial, RedMaterial, GreenMaterial, BlueMaterial } from "./view/Materials.js"
+import { WhiteMaterial, BlackMaterial, RedMaterial, GreenMaterial, BlueMaterial } from "./view/materials.js"
 import MakeLabelCanvas from "./view/make-label-canvas.js"
 import Resize from "./view/resize.js"
 import AddAxes from "./view/add-axes.js"
