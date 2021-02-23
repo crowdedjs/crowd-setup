@@ -1,6 +1,6 @@
 {
   "name": "@crowdedjs/crowd-setup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,5 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@crowdedjs/worker": "^0.2.2"
-  }
+  },
+  "type":"module"
 }
