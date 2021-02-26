@@ -1,6 +1,6 @@
 {
   "name": "@crowdedjs/crowd-setup",
-  "version": "0.1.4",
+  "version": "0.1.5s",
   "description": "",
   "main": "index.js",
   "scripts": {
