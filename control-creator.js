@@ -145,11 +145,15 @@ class ControlCreator {
   asTime(ticks) {
     let milliseconds = ticks * this.millisecondsPerFrame;
 
-    let minutes = Math.floor(ticks / (60 * 25));
-    let remainder = ticks - minutes * (60 * 25);
-    let seconds = Math.floor(remainder / 25);
-    remainder -= seconds * 25;
-    return milliseconds;
+    let hours = Math.floor(milliseconds/(60*60*1000))
+    let remainder = milliseconds - hours * (60*60*1000);
+    let minutes = Math.floor(remainder / (60*1000));
+    remainder = remainder - minutes * (60*1000);
+    let seconds = Math.floor(remainder / 1000);
+    remainder -= seconds * 1000;
+    remainder = Math.floor(remainder);
+    return ("" + hours).padStart(2,"0") + ":" + ("" + minutes).padStart(2, "0") + ":" + ("" + seconds).padStart(2, "0") + ":" + ("" + remainder).padStart(3, "0");
+    //return milliseconds;
   }
 
   optionsButtonClick() {
@@ -202,12 +206,13 @@ class ControlCreator {
     for (let i = 0; i < allSimulations.length; i++) {
       vels.push(allSimulations[i].length / ((new Date() - firstTicks[i]) / 1000));
     }
-    let value = "" + this.asTime(document.getElementById("myRange").value)
-      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length) + " seconds calculated").join(",")
+    let value = "" + this.asTime(document.getElementById("myRange").value) + " slider time"
+      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length) + " in-simulation time").join(",")
       + "<br>" + allSimulations.map(i => "" + i.length + " frames calculated").join(",")
       + "<br>" + vels.map(i => i.toFixed(2) + " fps").join(",")
-      + "<br>" + vels.map(i => (this.asTime(i.length) / this.secondsOfSimulation) + " fps").join(",")
-      + "<br>" + this.asTime(this.secondsOfSimulation * 1_000 / this.millisecondsPerFrame);
+      //+ "<br>" + vels.map(i => (this.asTime(i.length) / this.secondsOfSimulation) + " fps").join(",")
+      + "<br>" + this.asTime((this.secondsOfSimulation  - allSimulations[0].length )/vels[0]) +  " time until done"
+      + "<br>" + this.asTime(this.secondsOfSimulation * 1_000 / this.millisecondsPerFrame) + " in-simulation end time";
 
     document.getElementById("counter").innerHTML = value;
   }
