@@ -21,6 +21,7 @@ class CrowdSetup {
     this.first = true;              //Is this the first tick?
     let self = this;                //Reference to this for use in lambdas
     this.controls = {};
+    let currentPlaySpeed = 1;
     let done = false;
     let nurseSim = false;
     let sentinelAgent;
@@ -226,6 +227,11 @@ class CrowdSetup {
 
     async function tick() {
       self.controls.update(CrowdSetup.allSimulations, CrowdSetup.firstTicks);  //Update the controls
+      let playSpeed = self.controls.getPlaySpeed();
+      if (playSpeed != currentPlaySpeed) {
+        currentPlaySpeed = playSpeed;
+        viewer.changeSpeed(currentPlaySpeed);
+      }
       draw(); //Draw the view
     }
 

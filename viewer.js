@@ -26,6 +26,7 @@ const mixers = [];  //Each agent needs a mixer to keep track of their animation 
 const loader = new FBXLoader(); //We are using FBX files. If this ever changes, then we can just change this line
 let base = null;
 let allAnimations = []; //All the animations we have loaded
+let playSpeed = 1;
 
 //Turn the fbx loader into a promise.
 function loadPromise(url) {
@@ -124,14 +125,23 @@ function boot(three, environment, locations, assetURL) {
   //Go through and load all the poses
   let allPromises = [];
 
-  if (useAnimatedCharacters) {
+  // if (useAnimatedCharacters) {
   Poses.poseList.forEach((pose, index)=>{
       let url = `${assetURL}models/${pose.file}.fbx`;
       console.log(url);
       allPromises.push(loadPromise(url));
   });
+// }
+//   else {
+//     base = 1;
+//   }
 
+  return resolvePromises(three, allPromises, assetURL)
+}
+
+async function resolvePromises(three, allPromises, assetURL) {
   //Wait for all the poses to be done.
+  //TODO write a sleep function
   Promise.all(allPromises)
     .then(results => {
       results.forEach((result, index)=>{
@@ -160,15 +170,12 @@ function boot(three, environment, locations, assetURL) {
       three.scene.add(first);
       first.position.set(0, 0, 0);
       first.scale.set(.01, .01, .01);
-      
+
+      useAnimatedCharacters = true;
     })
     .catch(err => {
       console.error("There was an error in the load promise " + err);
     })
-}
-  else {
-    base = 1;
-  }
 }
 
 function loadOBJ(three, path) {
@@ -218,7 +225,7 @@ function addLocations(three, locations) {
 function addAgent(three, agent, color) {
 
   let object;
-  if (useAnimatedCharacters) {
+  if (useAnimatedCharacters && base != 1) {
     object = SkeletonUtils.clone(base); //Required to properly clone the skeleton
   let mixer = new THREE.AnimationMixer(object);
   mixers.push(mixer);
@@ -276,25 +283,30 @@ function updateAgent(three, agent) {
   // Calculate and apply a rotation for the agent based on the direction it is moving in
   let nextPosition = new THREE.Vector3(agent.x, agent.y, agent.z);
   let previousPosition = three.agentGroup.positions[index][0];
-  if (useAnimatedCharacters) {
-  let positionChange = new THREE.Vector3(nextPosition.x - previousPosition.x, nextPosition.y - previousPosition.y, nextPosition.z - previousPosition.z);
+  let positionChange;
+  if (useAnimatedCharacters && base != 1) {
+  positionChange = new THREE.Vector3(nextPosition.x - previousPosition.x, nextPosition.y - previousPosition.y, nextPosition.z - previousPosition.z);
   let nextAngle = (Math.atan2(positionChange.z, positionChange.x));
   three.agentGroup.children[index].rotation.y = Math.PI / 2 - nextAngle;
   }
   three.agentGroup.positions[index] = [nextPosition, null];
-  if (useAnimatedCharacters) {
+  if (useAnimatedCharacters && base != 1) {
 
     let child = three.agentGroup.children[index];
-    for (let j = 0; j < child.actions.length; j++) {
-      let action = child.actions[j];
-      action.setEffectiveWeight(0);
-      if(!agent.pose && action._key == "Walking" ){
-        action.setEffectiveWeight(1);
+      for (let j = 0; j < child.actions.length; j++) {
+        let action = child.actions[j];
+        action.setEffectiveWeight(0);
+        let thresholdNum = playSpeed != 100 ? 0.01 : 0.001;
+
+        if (positionChange.length() >= thresholdNum * playSpeed && action._key == "Walking") {
+          action.setEffectiveWeight(1);
+          action.setEffectiveTimeScale(1 + Math.log(playSpeed));
+        }
+        if (positionChange.length() < thresholdNum * 2 * playSpeed && action._key == "Idle") {
+          action.setEffectiveWeight(1);
+          action.setEffectiveTimeScale(1);
+        }
       }
-      else if(agent.pose == action._key){
-        action.setEffectiveWeight(1);
-      }
-    }
 }
 }
 
@@ -317,6 +329,11 @@ function hasBooted(){
   return base!=null;
 }
 
+function changeSpeed(newSpeed) {
+  playSpeed = newSpeed;
+  console.log(playSpeed)
+}
+
 export {
   //CylinderGeometry,
   //MakeLabelCanvas,
@@ -327,5 +344,6 @@ export {
   addAgent, //Add an agent to the simulation
   updateAgent,  //Update an agent in the simulation
   render , //Render the scene
-  hasBooted
+  hasBooted,
+  changeSpeed
 };
