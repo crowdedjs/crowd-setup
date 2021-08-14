@@ -131,8 +131,8 @@ function boot(three, environment, locations, assetURL) {
 
   base = 1;
 
-  return setTimeout(() => resolvePromises(three, allPromises, assetURL), 10000);
-  // return resolvePromises(three, allPromises, assetURL);
+  // return setTimeout(() => resolvePromises(three, allPromises, assetURL), 10000);
+  return resolvePromises(three, allPromises, assetURL);
 }
 
 async function resolvePromises(three, allPromises, assetURL) {
