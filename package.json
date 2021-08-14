@@ -10,7 +10,7 @@
   "author": "B. Ricks, PhD",
   "license": "MIT",
   "dependencies": {
-    "@crowdedjs/worker": "^0.2.2"
+    "@crowdedjs/worker": "latest"
   },
-  "type":"module"
+  "type": "module"
 }

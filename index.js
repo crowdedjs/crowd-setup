@@ -24,7 +24,6 @@ class CrowdSetup {
     let currentPlaySpeed = 1;
     let done = false;
     let nurseSim = false;
-    let sentinelAgent;
 
     //Add the html elements if the user passes in a reference for us to attach to.
     if (elementParent != null) {
@@ -186,7 +185,7 @@ class CrowdSetup {
         {
           for(let j = agentArray.length; j < agentPositionsRef[i].length; j++)
           {
-            agentArray[j] = new Array(agentPositionsRef[j].id, i + 1, 7501);
+            agentArray[j] = new Array(agentPositionsRef[i].id, i + 1, 7501);
           }
         }
 
