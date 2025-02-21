@@ -133,7 +133,7 @@ class CrowdSetup {
         nextTick([JSON.stringify(newAgents, replacer), JSON.stringify(newDestinations, replacer), JSON.stringify(leavingAgents, replacer)])
 
         // SCORING FUNCTION CALL
-        scoring();
+        // scoring();
       }
     }
 

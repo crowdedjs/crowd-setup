@@ -11,6 +11,13 @@ class ControlCreator {
     this.simulations = simulations;
     this.secondsOfSimulation = secondsOfSimulation;
     this.millisecondsPerFrame = millisecondsPerFrame;
+    
+    this.simulationStopTime; //The wall clock time when we stopped simulating because we got to the end
+
+
+
+
+
     let canvas = document.createElement("canvas");
     canvas.id = "canv";
     elementParent.appendChild(canvas);
@@ -103,6 +110,8 @@ class ControlCreator {
 
     let divCounter = document.createElement("div");
     divCounter.id = "counter";
+    divCounter.style.backgroundColor = "lightgray"
+    divCounter.style.textShadow = "1px 1px white"
     divCounterParent.appendChild(divCounter);
 
     document.body.appendChild(divCounterParent);
@@ -194,9 +203,22 @@ class ControlCreator {
     let advance = state * speed;
     let currentIndex = this.getCurrentTick();
     let newIndex = currentIndex + advance;
+
     if (newIndex < 0) {
       newIndex = 0;
     }
+
+    let isSimulating = this.secondsOfSimulation >= allSimulations[0].length
+    if(isSimulating){
+      this.simulationStopTime = null
+    }
+    else{
+      if(this.simulationStopTime == null){
+        this.simulationStopTime = new Date()
+        console.log(this.simulationStopTime)
+      }
+    }
+
     if (newIndex >= Math.max(...allSimulations.map(i => i.length)))
       newIndex = Math.max(...allSimulations.map(i => i.length)) - 1;
     this.setTick(newIndex);
@@ -204,15 +226,26 @@ class ControlCreator {
     //let vel = Math.max(...allSimulations.map(i=>i.length) )/(elpasedTime/1000);
     let vels = [];
     for (let i = 0; i < allSimulations.length; i++) {
-      vels.push(allSimulations[i].length / ((new Date() - firstTicks[i]) / 1000));
+      if(isSimulating)
+        vels.push(allSimulations[i].length / ((new Date() - firstTicks[i]) / 1000));
+      else{
+        vels.push(allSimulations[i].length / ((this.simulationStopTime - firstTicks[i]) / 1000));
+      }
     }
     let value = "" + this.asTime(document.getElementById("myRange").value) + " slider time"
-      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length) + " in-simulation time").join(",")
-      + "<br>" + allSimulations.map(i => "" + i.length + " frames calculated").join(",")
-      + "<br>" + vels.map(i => i.toFixed(2) + " fps").join(",")
-      //+ "<br>" + vels.map(i => (this.asTime(i.length) / this.secondsOfSimulation) + " fps").join(",")
-      + "<br>" + this.asTime((this.secondsOfSimulation  - allSimulations[0].length )/vels[0]) +  " time until done"
-      + "<br>" + this.asTime(this.secondsOfSimulation * 1_000 / this.millisecondsPerFrame) + " in-simulation end time";
+      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length) + " in-simulation time").join(",") //Where in the simulation the slider is
+      + "<br>" + this.asTime(this.secondsOfSimulation * 1_000 / this.millisecondsPerFrame) + " in-simulation end time" // Simulation time when the simulation will stop
+      + "<br>" + allSimulations.map(i => "" + i.length + " frames calculated").join(",") //Where in the simulation we are simulating
+      + "<br>" + vels.map(i => (this.secondsOfSimulation) + "  frames to calculate").join(",") // Total number of frames we are going to calculate
+      + "<br>" + vels.map(i => i.toFixed(2) + " fps").join(",") // The number of frames we are calcuating (calculated) per second
+      + "<br>" + new Date() +  " test1" //Current time
+      // + "<br>" + vels.map(i => (this.asTime(i.length) / this.secondsOfSimulation) + " fps").join(",")
+      if(isSimulating){
+        value +=  "<br>" + this.asTime((this.secondsOfSimulation  - allSimulations[0].length )/vels[0]) +  " time until done" // Time until the simulation will be done
+        value +=  "<br>" + this.asTime((new Date  - firstTicks[0] )/1_000) +  " time spent" // Time until the simulation will be done
+      }
+      else
+          value += "<br> Done Simulating in " + this.asTime((this.simulationStopTime - firstTicks[0])/1_000)
 
     document.getElementById("counter").innerHTML = value;
   }
