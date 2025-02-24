@@ -232,13 +232,14 @@ class ControlCreator {
         vels.push(allSimulations[i].length / ((this.simulationStopTime - firstTicks[i]) / 1000));
       }
     }
-    let value = "" + this.asTime(document.getElementById("myRange").value) + " slider time"
-      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length) + " in-simulation time").join(",") //Where in the simulation the slider is
+    let value = "" 
+      + this.asTime(document.getElementById("myRange").value) + " slider time"
+      + "<br>" + this.millisecondsPerFrame/1_000 + " second per tick"
+      + "<br>" + allSimulations.map(i => "" + this.asTime(i.length-1) + " in-simulation time").join(",") //Where in the simulation the slider is
       + "<br>" + this.asTime(this.secondsOfSimulation * 1_000 / this.millisecondsPerFrame) + " in-simulation end time" // Simulation time when the simulation will stop
-      + "<br>" + allSimulations.map(i => "" + i.length + " frames calculated").join(",") //Where in the simulation we are simulating
+      + "<br>" + allSimulations.map(i => "" + (i.length-1) + " frames calculated").join(",") //Where in the simulation we are simulating
       + "<br>" + vels.map(i => (this.secondsOfSimulation) + "  frames to calculate").join(",") // Total number of frames we are going to calculate
       + "<br>" + vels.map(i => i.toFixed(2) + " fps").join(",") // The number of frames we are calcuating (calculated) per second
-      + "<br>" + new Date() +  " test1" //Current time
       // + "<br>" + vels.map(i => (this.asTime(i.length) / this.secondsOfSimulation) + " fps").join(",")
       if(isSimulating){
         value +=  "<br>" + this.asTime((this.secondsOfSimulation  - allSimulations[0].length )/vels[0]) +  " time until done" // Time until the simulation will be done
